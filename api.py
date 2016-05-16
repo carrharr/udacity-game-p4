@@ -59,14 +59,15 @@ class HangmanAPI(remote.Service):
         """Creates new game"""
         user_a = User.query(User.name == request.user_a).get()
         user_b = User.query(User.name == request.user_b).get()
-        if not user_a and user_b:
+        if  user_a == None or user_b == None:
             raise endpoints.NotFoundException(
                     'One of users with that name does not exist!')
-        word_a = request.word_a
-        word_b = request.word_b
-        game = Game.new_game(user_a.key, user_b.key, word_a, word_b)
+        else :
+            word_a = request.word_a
+            word_b = request.word_b
+            game = Game.new_game(user_a.key, user_b.key, word_a, word_b)
 
-        return game.to_form()
+            return game.to_form()
 
     @endpoints.method(request_message=GET_GAME_REQUEST,
                       response_message=GameForm,
@@ -146,19 +147,22 @@ class HangmanAPI(remote.Service):
 
         # This is probably badly written
         # Need testing
-        #if word_x_guess[guess] != '_':
+        #if a == True and guess in :
         #    raise endpoints.BadRequestException('You have already guessed that \
         #                                        letter!')
         """
         This next thing is not working properly.
         """
+        print word_x
+        print word_x_guess
+        print guess
 
         for num in range(0, len(word_x)):
-            if guess == word_x[num]:
-                word_x_guess = replaceCharacterAtIndexInString(word_x_guess,\
-                                                                num,guess)
+            print word_x[num]
+            if guess in str(word_x[num]):
+                word_x_guess = replaceCharacterAtIndexInString(word_x_guess,num,guess)
             else:
-                attempts_remaining_x = (attempts_remaining_x) - 1
+                attempts_remaining_x = int(attempts_remaining_x)- 1
 
             # Check guess against word_a
             # If correct change underscores for letters in word_a_guess
@@ -168,23 +172,11 @@ class HangmanAPI(remote.Service):
         # Append a move to the history
         game.history.append(('A' if a else 'B', guess))
 
-        """
-        Have to redo the winner var to get winner when word_x and word_x_guess
-        match.
+        #Check winner and
+        winner = check_winner(word_x, word_x_guess)
 
-        This next_move and tie is rubbish, will only keep the <if winner> and
-        else it to restart function as it is two users playing independently
-        """
-
-#        winner = check_winner(word_x)
-
-#        if winner:
-#           game.end_game(user.key)
-#        else:
-#            # Send reminder email
-#            taskqueue.add(url='/tasks/send_move_email',
-#                          params={'user_key': game.next_move.urlsafe(),
-#3                                  'game_key': game.key.urlsafe()})
+        if winner:
+           game.end_game(user.key)
         game.put()
         return game.to_form()
 

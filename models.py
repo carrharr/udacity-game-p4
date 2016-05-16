@@ -58,8 +58,11 @@ class Game(ndb.Model):
                     user_b=user_b,
                     word_a=word_a,
                     word_b=word_b,
+                    word_a_guess=[],
+                    word_b_guess=[],
                     attempts_remaining_a=7,
-                    attempts_remaining_b=7)
+                    attempts_remaining_b=7,
+                    history=[])
         game.word_a = list(word_a)
         game.word_b = list(word_b)
         game.word_a_guess = ['_']*len(game.word_a)
@@ -75,6 +78,11 @@ class Game(ndb.Model):
                         word_b = str(self.word_b),
                         user_a=self.user_a.get().name,
                         user_b=self.user_b.get().name,
+                        word_a_guess=str(self.word_a_guess),
+                        word_b_guess=str(self.word_b_guess),
+                        attempts_remaining_a=self.attempts_remaining_a,
+                        attempts_remaining_b=self.attempts_remaining_b,
+                        history=str(self.history),
                         game_over=self.game_over
                         )
         if self.winner :
@@ -115,12 +123,13 @@ class GameForm(messages.Message):
     word_b = messages.StringField(3, required=True)
     word_a_guess = messages.StringField(4)
     word_b_guess = messages.StringField(5)
-    attempts_remaining_a = messages.StringField(6)
-    attempts_remaining_b = messages.StringField(7)
+    attempts_remaining_a = messages.IntegerField(6)
+    attempts_remaining_b = messages.IntegerField(7)
     user_a = messages.StringField(8, required=True)
     user_b = messages.StringField(9, required=True)
     game_over = messages.BooleanField(10, required=True)
     winner = messages.BooleanField(11)
+    history = messages.StringField(12)
 
 
 class GameForms(messages.Message):
