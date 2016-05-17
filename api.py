@@ -130,11 +130,13 @@ class HangmanAPI(remote.Service):
 
         # Get user name
         user = User.query(User.name == request.user_name).get()
+        # Check user is valid
+        if user == None :
+            raise endpoints.NotFoundException('User not found!')
         # Signifiers for which user is guessing
         a = True if (user.key == game.user_a) else False
         word_x = game.word_a if a == True else game.word_b
         word_x_guess = game.word_a_guess if a == True else game.word_b_guess
-        attempts_remaining_x = game.attempts_remaining_a if a == True else game.attempts_remaining_b
         guess = request.guess
 
         # Verify move is valid
@@ -145,30 +147,41 @@ class HangmanAPI(remote.Service):
         if len(list(guess)) > 1:
             raise endpoints.BadRequestException('You can only enter 1 character!')
 
-        # This is probably badly written
-        # Need testing
-        #if a == True and guess in :
-        #    raise endpoints.BadRequestException('You have already guessed that \
-        #                                        letter!')
+        # Verify in history that guess has not been guessed before
+        if a == True :
+            for (u , s) in game.history:
+                if u == 'A' and s == guess:
+                        raise endpoints.BadRequestException('You already guessed that letter!')
+        else :
+            for (u , s) in game.history:
+                if u == 'B' and s == guess:
+                        raise endpoints.BadRequestException('You already guessed that letter!')
+
+        # Get guess and place it in word_x_guess if correct
         for num in range(0, len(word_x)):
             if guess in str(word_x[num]):
                 word_x_guess = replaceCharacterAtIndexInString(word_x_guess,num,guess)
 
+        # If incorrect down one counter on attempts_remaining
         if guess not in str(word_x):
-                # Is not being saved
-            attempts_remaining_x -= 1
-            print attempts_remaining_x
+            if a == True :
+                game.attempts_remaining_a -= 1
+            else:
+                game.attempts_remaining_b -= 1
+
         # Append a move to the history
         game.history.append(('A' if a else 'B', guess))
 
-        #Check winner and
+        #Check winner
         winner = check_winner(word_x, word_x_guess)
 
         if winner:
            game.end_game(user.key)
-        else:
-            game.put()
-            return game.to_form()
+           return game.to_form()
+        game.put()
+        return game.to_form()
+
+
 
     @endpoints.method(request_message=GET_GAME_REQUEST,
                       response_message=StringMessage,

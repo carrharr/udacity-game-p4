@@ -43,8 +43,8 @@ class Game(ndb.Model):
     word_b = ndb.PickleProperty(required=True) # secret word for user a
     word_a_guess = ndb.PickleProperty() # Convert word_a to an empty list
     word_b_guess = ndb.PickleProperty() # Convert word_b to an empty list
-    attempts_remaining_a = ndb.IntegerProperty(default=7)
-    attempts_remaining_b = ndb.IntegerProperty(default=7)
+    attempts_remaining_a = ndb.IntegerProperty()
+    attempts_remaining_b = ndb.IntegerProperty()
     user_a = ndb.KeyProperty(required=True, kind='User')
     user_b = ndb.KeyProperty(required=True, kind='User')
     game_over = ndb.BooleanProperty(required=True, default=False)
@@ -60,8 +60,8 @@ class Game(ndb.Model):
                     word_b=word_b,
                     word_a_guess=[],
                     word_b_guess=[],
-#                    attempts_remaining_a=7,
-#                    attempts_remaining_b=7,
+                    attempts_remaining_a=int(7),
+                    attempts_remaining_b=int(7),
                     history=[])
         game.word_a = list(word_a)
         game.word_b = list(word_b)
@@ -80,13 +80,13 @@ class Game(ndb.Model):
                         user_b=self.user_b.get().name,
                         word_a_guess=str(self.word_a_guess),
                         word_b_guess=str(self.word_b_guess),
-                        attempts_remaining_a=self.attempts_remaining_a,
-                        attempts_remaining_b=self.attempts_remaining_b,
+                        attempts_remaining_a=int(self.attempts_remaining_a),
+                        attempts_remaining_b=int(self.attempts_remaining_b),
                         history=str(self.history),
                         game_over=self.game_over
                         )
-        if self.winner :
-            form.winner = self.winner.get().name
+#        if self.winner :
+#            form.winner = self.winner.get().name
         return form
 
     def end_game(self, winner):
