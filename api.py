@@ -134,41 +134,30 @@ class HangmanAPI(remote.Service):
         a = True if (user.key == game.user_a) else False
         word_x = game.word_a if a == True else game.word_b
         word_x_guess = game.word_a_guess if a == True else game.word_b_guess
-        attempts_remaining_x = game.attempts_remaining_a if a == True else \
-                                game.attempts_remaining_b
+        attempts_remaining_x = game.attempts_remaining_a if a == True else game.attempts_remaining_b
         guess = request.guess
+
         # Verify move is valid
-        #if guess != re.match([a-zA-Z]):
-        #    raise endpoints.BadRequestException('Invalid charachter!')
+        x = re.compile('[a-zA-Z]')
+        if not x.match(guess):
+            raise endpoints.BadRequestException('Invalid charachter!')
 
         if len(list(guess)) > 1:
-            raise endpoints.BadRequestException('You can only enter 1 \
-                                                character!')
+            raise endpoints.BadRequestException('You can only enter 1 character!')
 
         # This is probably badly written
         # Need testing
         #if a == True and guess in :
         #    raise endpoints.BadRequestException('You have already guessed that \
         #                                        letter!')
-        """
-        This next thing is not working properly.
-        """
-        print word_x
-        print word_x_guess
-        print guess
-
         for num in range(0, len(word_x)):
-            print word_x[num]
             if guess in str(word_x[num]):
                 word_x_guess = replaceCharacterAtIndexInString(word_x_guess,num,guess)
-            else:
-                attempts_remaining_x = int(attempts_remaining_x)- 1
 
-            # Check guess against word_a
-            # If correct change underscores for letters in word_a_guess
-            # If word is complete do winner
-            # If not add -1 counter on attempts_remaining_x
-            # If attempts_remaining_x == 0 , do loser
+        if guess not in str(word_x):
+                # Is not being saved
+            attempts_remaining_x -= 1
+            print attempts_remaining_x
         # Append a move to the history
         game.history.append(('A' if a else 'B', guess))
 
@@ -177,8 +166,9 @@ class HangmanAPI(remote.Service):
 
         if winner:
            game.end_game(user.key)
-        game.put()
-        return game.to_form()
+        else:
+            game.put()
+            return game.to_form()
 
     @endpoints.method(request_message=GET_GAME_REQUEST,
                       response_message=StringMessage,
