@@ -39,8 +39,8 @@ class User(ndb.Model):
 
 class Game(ndb.Model):
     """Game object"""
-    word_a = ndb.PickleProperty(required=True) # secret word for user b
-    word_b = ndb.PickleProperty(required=True) # secret word for user a
+    word_a = ndb.PickleProperty(required=True) # secret word for user a
+    word_b = ndb.PickleProperty(required=True) # secret word for user b
     word_a_guess = ndb.PickleProperty() # Convert word_a to an empty list
     word_b_guess = ndb.PickleProperty() # Convert word_b to an empty list
     attempts_remaining_a = ndb.IntegerProperty()
@@ -85,8 +85,8 @@ class Game(ndb.Model):
                         history=str(self.history),
                         game_over=self.game_over
                         )
-#        if self.winner :
-#            form.winner = self.winner.get().name
+        if self.winner :
+            form.winner = self.winner.get().name
         return form
 
     def end_game(self, winner):
@@ -128,7 +128,7 @@ class GameForm(messages.Message):
     user_a = messages.StringField(8, required=True)
     user_b = messages.StringField(9, required=True)
     game_over = messages.BooleanField(10, required=True)
-    winner = messages.BooleanField(11)
+    winner = messages.StringField(11)
     history = messages.StringField(12)
 
 

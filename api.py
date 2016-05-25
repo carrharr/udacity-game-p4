@@ -9,7 +9,7 @@ from google.appengine.api import taskqueue
 from models import User, Game, Score
 from models import StringMessage, NewGameForm, GameForm, MakeMoveForm,\
     ScoreForms, GameForms, UserForm, UserForms
-from utils import get_by_urlsafe, check_winner, check_full, replaceCharacterAtIndexInString
+from utils import get_by_urlsafe, check_winner, replaceCharacterAtIndexInString
 
 NEW_GAME_REQUEST = endpoints.ResourceContainer(NewGameForm)
 GET_GAME_REQUEST = endpoints.ResourceContainer(
@@ -35,6 +35,8 @@ class HangmanAPI(remote.Service):
         if User.query(User.name == request.user_name).get():
             raise endpoints.ConflictException(
                     'A User with that name already exists!')
+        if not request.user_name or request.email==None:
+            raise endpoints.BadRequestException('You must provide a username and email')
         user = User(name=request.user_name, email=request.email)
         user.put()
         return StringMessage(message='User {} created!'.format(
@@ -82,6 +84,7 @@ class HangmanAPI(remote.Service):
         else:
             raise endpoints.NotFoundException('Game not found!')
 
+
     @endpoints.method(request_message=USER_REQUEST,
                       response_message=GameForms,
                       path='user/games',
@@ -95,6 +98,23 @@ class HangmanAPI(remote.Service):
         games = Game.query(ndb.OR(Game.user_a == user.key,
                                   Game.user_b == user.key)).\
             filter(Game.game_over == False)
+        return GameForms(items=[game.to_form() for game in games])
+
+    @endpoints.method(response_message=GameForms,
+                      path='all_games',
+                      name='get_all_games',
+                      http_method='GET')
+    def get_all_games(self, request):
+        """Return all games"""
+        return GameForms(items=[game.to_form() for game in Game.query()])
+
+    @endpoints.method(response_message=GameForms,
+                      path='all_active_games',
+                      name='get_all_active_games',
+                      http_method='GET')
+    def get_all_active_games(self, request):
+        """Return all active games"""
+        games = Game.query(Game.game_over!=True)
         return GameForms(items=[game.to_form() for game in games])
 
     @endpoints.method(request_message=GET_GAME_REQUEST,
@@ -139,6 +159,14 @@ class HangmanAPI(remote.Service):
         word_x_guess = game.word_a_guess if a == True else game.word_b_guess
         guess = request.guess
 
+        # Verify user has moves left
+        if a == True :
+            if game.attempts_remaining_a == 0:
+                raise endpoints.BadRequestException('You have been hanged!')
+        else:
+            if game.attempts_remaining_b == 0:
+                raise endpoints.BadRequestException('You have been hanged!')
+
         # Verify move is valid
         x = re.compile('[a-zA-Z]')
         if not x.match(guess):
@@ -169,15 +197,20 @@ class HangmanAPI(remote.Service):
             else:
                 game.attempts_remaining_b -= 1
 
+        if game.attempts_remaining_a == 0 and game.attempts_remaining_b ==0 :
+            game.key.delete()
+            raise endpoints.NotFoundException('Both have been hanged, losers!')
         # Append a move to the history
         game.history.append(('A' if a else 'B', guess))
 
         #Check winner
         winner = check_winner(word_x, word_x_guess)
 
+
         if winner:
            game.end_game(user.key)
            return game.to_form()
+           raise endpoints.NotFoundException('yay, you have won!')
         game.put()
         return game.to_form()
 
@@ -237,6 +270,5 @@ class HangmanAPI(remote.Service):
             average = float(total_attempts_remaining)/count
             memcache.set(MEMCACHE_MOVES_REMAINING,
                          'The average moves remaining is {:.2f}'.format(average))
-
 
 api = endpoints.api_server([HangmanAPI])

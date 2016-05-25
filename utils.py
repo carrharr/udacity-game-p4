@@ -34,20 +34,13 @@ def get_by_urlsafe(urlsafe, model):
 
 
 def check_winner(word_x, word_x_guess):
-    """Check the board. If there is a winner, return the symbol of the winner"""
-    """Change from board to word_x to word_x_guess comparison """
+    """ Word_x to word_x_guess comparison,if equal return winner true """
 
     if word_x == word_x_guess :
         return True
     else:
         return False
 
-def check_full(board):
-    """Return true if the board is full"""
-    for cell in board:
-        if not cell:
-            return False
-    return True
 
 def replaceCharacterAtIndexInString(s,index,newCharacter):
     """
@@ -57,4 +50,3 @@ def replaceCharacterAtIndexInString(s,index,newCharacter):
     name = s
     name[index]= newCharacter
     return name
-    
