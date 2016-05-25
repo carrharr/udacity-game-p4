@@ -7,11 +7,6 @@ Only accepts english unicode letters for now :)
 ##Overview
 todo
 
-## Table of Contents
-* [Files](#files)
-* [Required Dependencies](#required-dependencies-and-modules)
-* [How To Run](#how-to-run)
-* [JSON API](#json-api)
 ## Endpoints
 *   [1.create_user](#create_user)
 *   [2.get_user_rankings](#get_user_rankings)
