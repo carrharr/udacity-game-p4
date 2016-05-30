@@ -168,7 +168,7 @@ class StringMessage(messages.Message):
 
 
 class UserForm(messages.Message):
-    """User Form"""
+    """User Form for outbound User information"""
     name = messages.StringField(1, required=True)
     email = messages.StringField(2)
     wins = messages.IntegerField(3, required=True)
