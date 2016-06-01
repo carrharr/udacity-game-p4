@@ -155,33 +155,52 @@ Return multiple UserForm objects.
 ## Endpoints
 
 ### create_user
+Makes a new user entry in User model. Requires a new name not found in the
+database and an email.
 
 ### get_user_rankings
+Return all Users ranked by their win percentage.
 
 ### new_game
+Create a new game. Requires two usernames and two different guess words.
 
 ### get_game
+Given a valid urlsafe_game_key return the game data.
 
 ### get_user_games
+Given a user, return active games for that user.
 
 ### get_all_games
+Returns all games being played and ever played.
 
 ### get_all_active_games
+Returns only all active games.
 
 ### cancel_game
+Given a urlsafe_game_key, deletes the game if the game is not over and game is
+found.
 
 ### make_move
+Takes an urlsafe_game_key, a username and a guess. First it checks the game
+exists and is not over. Then gets the user and sets signifiers for his values
+in the game, for later checking the guess against his secret word and returning
+if the guess was correct, if the game has been won or if his attempts_remaining
+have reached 0.
 
 ### get_game_history
+Given a urlsafe_game_key check its existance, if it exixts return its history.
 
 ### get_scores
+Return all scores of games ever played.
 
 ### get_user_scores
+Given a valid username return all his scores.
 
 ### get_average_attempts
+CHECK
 
-## TODO
+## Using the api
 
-Whats left to do?
+
 
 Daniel Carrillo Harris 2016 (carrharr) danielcarrilloharris@gmail.com
