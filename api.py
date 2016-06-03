@@ -206,12 +206,12 @@ class HangmanAPI(remote.Service):
         #Check winner
         winner = check_winner(word_x, word_x_guess)
 
-
         if winner:
            game.end_game(user.key)
-           return game.to_form()
-           raise endpoints.NotFoundException('yay, you have won!')
+           game.to_form()
+           return StringMessage(message='You have won!')
         game.put()
+        taskqueue.add(url='/tasks/cache_average_attempts')
         return game.to_form()
 
 
@@ -265,9 +265,10 @@ class HangmanAPI(remote.Service):
         games = Game.query(Game.game_over == False).fetch()
         if games:
             count = len(games)
-            total_attempts_remaining = sum([game.attempts_remaining
+            total_attempts_remaining = sum([game.attempts_remaining_a + \
+                                        game.attempts_remaining_b
                                         for game in games])
-            average = float(total_attempts_remaining)/count
+            average = float(total_attempts_remaining)/count/2
             memcache.set(MEMCACHE_MOVES_REMAINING,
                          'The average moves remaining is {:.2f}'.format(average))
 

@@ -185,7 +185,8 @@ Takes an urlsafe_game_key, a username and a guess. First it checks the game
 exists and is not over. Then gets the user and sets signifiers for his values
 in the game, for later checking the guess against his secret word and returning
 if the guess was correct, if the game has been won or if his attempts_remaining
-have reached 0.
+have reached 0. Every time this endpoint is used it updates the memcached average
+attemps remaining.
 
 ### get_game_history
 Given a urlsafe_game_key check its existance, if it exixts return its history.
@@ -197,10 +198,15 @@ Return all scores of games ever played.
 Given a valid username return all his scores.
 
 ### get_average_attempts
-CHECK
+Get an average of attempts remaining across all games.
 
-## Using the api
-
+## Using-the-api
+1.  Update the value of application in app.yaml to the app ID you have registered
+ in the App Engine admin console and would like to use to host your instance of this sample.
+1.  Run the app with the devserver using dev_appserver.py DIR, and ensure it's
+ running by visiting the API Explorer - by default localhost:8080/_ah/api/explorer.
+1.  (Optional) Generate your client library(ies) with the endpoints tool.
+ Deploy your application
 
 
 Daniel Carrillo Harris 2016 (carrharr) danielcarrilloharris@gmail.com

@@ -1,0 +1,22 @@
+DESIGN CHOICES
+
+MODELS
+
+In the model section there's nothing specially weird going on, maybe in the Game
+model by having one single game object for a 2 player game, instead of two different
+objects sharing a urlsafe_key.
+
+ENDPOINTS
+
+The endpoints are as specified in the rubric, nothing special about them either,
+except make_move. This last endpoint is basically the core of the game, doing
+lots of things like checking correctness of input or signifiying in a variable
+the user symbol. I know this is probably not the best way of doing it, but for now
+it works. If required or maybe for love of art, i will separate it into different
+functions for easier use and failure contention.
+
+CRON JOBS AND TASKS
+
+Just has a reminder of an active game and the memcache for moves remaining. The
+memcache is as a static method for in-game speed while the send_reminder
+is done as its own. 

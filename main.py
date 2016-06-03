@@ -14,12 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# Edit by carrharr 2016-- danielcarrilloharris@gmail.com --
 import logging
 
 import webapp2
 from google.appengine.api import mail, app_identity
 from google.appengine.ext import ndb
-from api import TicTacToeAPI
+from api import HangmanAPI
 from utils import get_by_urlsafe
 
 from models import User, Game
@@ -34,8 +35,8 @@ class SendReminderEmail(webapp2.RequestHandler):
         users = User.query(User.email != None)
 
         for user in users:
-            games = Game.query(ndb.OR(Game.user_x == user.key,
-                                     Game.user_o == user.key)).\
+            games = Game.query(ndb.OR(Game.user_a == user.key,
+                                     Game.user_b == user.key)).\
                 filter(Game.game_over == False)
             if games.count() > 0:
                 subject = 'This is a reminder!'
@@ -57,28 +58,12 @@ class SendReminderEmail(webapp2.RequestHandler):
 class UpdateAverageMovesRemaining(webapp2.RequestHandler):
     def post(self):
         """Update game listing announcement in memcache."""
-        TicTacToeAPI._cache_average_attempts()
+        HangmanAPI._cache_average_attempts()
         self.response.set_status(204)
 
-class SendMoveEmail(webapp2.RequestHandler):
-    def post(self):
-        """Send an email to a User that it is their turn"""
-        logging.debug('HEREERERER"')
-        user = get_by_urlsafe(self.request.get('user_key'), User)
-        game = get_by_urlsafe(self.request.get('game_key'), Game)
-        subject = 'It\'s your turn!'
-        body = '{}, It\'s your turn to play Tic Tac Toe. The game key is: {}'.\
-           format(user.name, game.key.urlsafe())
-        logging.debug(body)
-        mail.send_mail('noreply@{}.appspotmail.com'.
-                               format(app_identity.get_application_id()),
-                               user.email,
-                               subject,
-                               body)
 
 
 app = webapp2.WSGIApplication([
     ('/crons/send_reminder', SendReminderEmail),
     ('/tasks/cache_average_attempts', UpdateAverageMovesRemaining),
-    ('/tasks/send_move_email', SendMoveEmail),
 ], debug=True)
