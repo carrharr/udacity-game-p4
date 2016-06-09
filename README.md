@@ -5,48 +5,50 @@ Only accepts english unicode letters for now :)
 ## [Overview](#Overview)
 
 ## [Models](#Models)
-*  [User](#user)
-*  [Game](#game)
-*  [Score](#score)
+*  [NDB User](#user)
+*  [NDB Game](#game)
+*  [NDB Score](#score)
 
 ## [Forms](#Forms)
-*  [GameForm](#GameForm)
-*  [GameForms](#GameForms)
-*  [NewGameForm](#NewGameForm)
-*  [MakeMoveForm](#MakeMoveForm)
-*  [ScoreForm](#ScoreForm)
-*  [ScoreForms](#ScoreForms)
-*  [UserForm](#UserForm)
-*  [UserForms](#UserForms)
+*  [Msg GameForm](#GameForm)
+*  [Msg GameForms](#GameForms)
+*  [Msg NewGameForm](#NewGameForm)
+*  [Msg MakeMoveForm](#MakeMoveForm)
+*  [Msg ScoreForm](#ScoreForm)
+*  [Msg ScoreForms](#ScoreForms)
+*  [Msg UserForm](#UserForm)
+*  [Msg UserForms](#UserForms)
 
 ## [Endpoints](#Endpoints)
-*   [create_user](#create_user)
-*   [get_user_rankings](#get_user_rankings)
-*   [new_game](#new_game)
-*   [get_game](#get_game)
-*   [get_user_games](#get_user_games)
-*   [get_all_games](#get_all_games)
-*   [get_all_active_games](#get_all_active_games)
-*   [cancel_game](#cancel_game)
-*   [make_move](#make_move)
-*   [get_game_history](#get_game_history)
-*   [get_scores](#get_scores)
-*   [get_user_scores](#get_user_scores)
-*   [get_average_attempts](#get_average_attempts)
+*   [@ create_user](#create_user)
+*   [@ get_user_rankings](#get_user_rankings)
+*   [@ new_game](#new_game)
+*   [@ get_game](#get_game)
+*   [@ get_user_games](#get_user_games)
+*   [@ get_all_games](#get_all_games)
+*   [@ get_all_active_games](#get_all_active_games)
+*   [@ cancel_game](#cancel_game)
+*   [@ make_move](#make_move)
+*   [@ get_game_history](#get_game_history)
+*   [@ get_scores](#get_scores)
+*   [@ get_user_scores](#get_user_scores)
+*   [@ get_average_attempts](#get_average_attempts)
 
 ## [Using the api](#Using-the-api)
 
 ## Overview
 
 This is a simple hangman game API for udacity's FSND Make a Game Project.
-Uses the Google App Engine platform and the NDB libraries. The idea was to
-create an API that allowed a multiplayer hangman experience, in which to win,
-you must guess the word before your opponent. At the moment the API consists of
-the basic features needed to play the game, though social features like social
-media logins and in-game friends are not implemented yet. Game creation from two
-different devices at the same time has not been implemented either.(ie. Two friends
-from their respective phones make a game entering only their user and their
-opponents secret word).
+Uses the Google App Engine platform and the NDB libraries. The game logic goes
+as follows (once you have diferent users and a game is created):
+- user_x will try to guess word_x .
+- guesses will be done only letter by letter.
+- turns will not apply.
+- if a user runs out of attempts he will be hanged and will await to see if .
+  his/her opponent has better luck.
+- if both users fail to guess their words the game will be deleted.
+When games get to full completion scores are recorded and a leaderboard based
+on wins can be generated.
 
 ## Models
 
@@ -83,6 +85,7 @@ Game model for game objects:
 * game_over       - BooleanProperty
 * winner          - KeyProperty
 * history         - PickleProperty
+* message         - StringProperty
 
 It has three classmethods:
 * new_game
@@ -116,6 +119,7 @@ GameForm for outbound game state information:
 * game_over       - BooleanField
 * winner          - StringField
 * history         - StringField
+* message         - StringField
 
 ### GameForms
 Container for multiple GameForm objects.
@@ -155,50 +159,107 @@ Return multiple UserForm objects.
 ## Endpoints
 
 ### create_user
-Makes a new user entry in User model. Requires a new name not found in the
-database and an email.
+- Path: 'user'
+- Method: POST
+- Parameters: user_name, email
+- Returns: Message confirming creation of the User.
+- Description: Makes a new user entry in User model. Requires a new name not
+  found in the database and an email.
 
 ### get_user_rankings
-Return all Users ranked by their win percentage.
+- Path: 'user/ranking'
+- Method: GET
+- Parameters: None
+- Returns: UserForms orderered by win_percentage.
+- Description: Return all Users ranked by their win percentage.
 
 ### new_game
-Create a new game. Requires two usernames and two different guess words.
+- Path: 'game'
+- Method: POST
+- Parameters: user_a, user_b, word_a, word_b
+- Returns: GameForm with game data.
+- Description: Create a new game. Requires two usernames and two different guess
+  words.
 
 ### get_game
-Given a valid urlsafe_game_key return the game data.
+- Path: 'game/{urlsafe_game_key}'
+- Method: GET
+- Parameters: urlsafe_game_key
+- Returns: GameForm with game data or 404 exception.
+- Description: Given a valid urlsafe_game_key return the game data.
 
 ### get_user_games
-Given a user, return active games for that user.
+- Path: 'user/games'
+- Method: GET
+- Parameters: user_name
+- Returns: GameForms with game data or 400 exception (user not found).
+- Description: Given a user, return active games for that user.
 
 ### get_all_games
-Returns all games being played and ever played.
+- Path: 'all_games'
+- Method: GET
+- Parameters: None
+- Returns: GameForms with game data.
+- Description: Returns all games being played and ever played.
 
 ### get_all_active_games
-Returns only all active games.
+- Path: 'all_active_games'
+- Method: GET
+- Parameters: None
+- Returns: GameForms with game data.
+- Description: Returns only all active games.
 
 ### cancel_game
-Given a urlsafe_game_key, deletes the game if the game is not over and game is
-found.
+- Path: 'game/{urlsafe_game_key}'
+- Method: DELETE
+- Parameters: urlsafe_game_key
+- Returns: Message confirming deletion of game or exceptions 400(game over)
+  / 404(game not found).
+- Description: Given a urlsafe_game_key, deletes the game if the game is
+  not over and game is found.
 
 ### make_move
-Takes an urlsafe_game_key, a username and a guess. First it checks the game
-exists and is not over. Then gets the user and sets signifiers for his values
-in the game, for later checking the guess against his secret word and returning
-if the guess was correct, if the game has been won or if his attempts_remaining
-have reached 0. Every time this endpoint is used it updates the memcached average
-attemps remaining.
+- Path: 'game/{urlsafe_game_key}'
+- Method: GET
+- Parameters: urlsafe_game_key, user_name, guess
+- Returns: GameForm with game data, 404 exception (User or game not found, or
+  both have lost) or 400 exception (invalid or repeated character).
+- Description: First it checks the game exists and is not over. Then gets the
+  user and sets signifiers for his values in the game, for later checking the
+  guess (only a single english unicode character) against his secret word and
+  returning if the guess was correct, if the game has been won or if his
+  attempts_remaining have reached 0. Every time this endpoint is used it
+  updates the memcached average attemps remaining.
 
 ### get_game_history
-Given a urlsafe_game_key check its existance, if it exixts return its history.
+- Path: 'game/{urlsafe_game_key}'
+- Method: GET
+- Parameters: urlsafe_game_key
+- Returns: GameForm with game data or 404 exception.
+- Description: Given a urlsafe_game_key check its existance, if it exixts
+  return its history.
 
 ### get_scores
-Return all scores of games ever played.
+- Path: 'scores'
+- Method: GET
+- Parameters: None
+- Returns: ScoreForms with user scores data.
+- Description: Return all scores of games ever played.
 
 ### get_user_scores
-Given a valid username return all his scores.
+- Path: 'scores/user/{user_name}'
+- Method: GET
+- Parameters: user_name
+- Returns: ScoreForms with given user's scores data or 404 exception(User
+  Not Found).
+- Description: Return all scores of games ever played by the given user.
 
 ### get_average_attempts
-Get an average of attempts remaining across all games.
+- Path: 'games/average_attempts'
+- Method: GET
+- Parameters: None
+- Returns: StringMessage with memcached average moves remaining.
+- Description: Get an average of attempts remaining across all games.
 
 ## Using-the-api
 1.  Update the value of application in app.yaml to the app ID you have registered

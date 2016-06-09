@@ -1,22 +1,31 @@
 DESIGN CHOICES
 
-MODELS
+* What additional properties did you add to your models and why?
 
-In the model section there's nothing specially weird going on, maybe in the Game
-model by having one single game object for a 2 player game, instead of two different
-objects sharing a urlsafe_key.
+  The models are made out of the essentials for a two player game,
+  or any game thats going to be online as this case. User and Game
+  are absolutely necesary and score is probably an obvious choice
+  as well for generating competition and interest in the game. While
+  Score could be contained inside Games, the easiest and clearest
+  approach for me was to have it as a separate model, with wich I
+  could easily create leaderboards, or maybe use in the future for
+  things like coupling users for games according to score. The
+  properties, and methods in the models make it clearer to execute
+  the api without lots of code that would obscure the general purpose
+  of itself.
 
-ENDPOINTS
 
-The endpoints are as specified in the rubric, nothing special about them either,
-except make_move. This last endpoint is basically the core of the game, doing
-lots of things like checking correctness of input or signifiying in a variable
-the user symbol. I know this is probably not the best way of doing it, but for now
-it works. If required or maybe for love of art, i will separate it into different
-functions for easier use and failure contention.
+* What were some of the trade-offs or struggles you faced when
+  implementing the new game logic?
 
-CRON JOBS AND TASKS
-
-Just has a reminder of an active game and the memcache for moves remaining. The
-memcache is as a static method for in-game speed while the send_reminder
-is done as its own. 
+  The new game logic lies heavily on the make_move endpoint, wich was
+  quite complex to figure out as it consists on multiple checks on
+  various parameters combined with execution of consequences of those
+  parameters. Dealing with two players really made this part interesting
+  as I nearly had to double everything, signifying who is who, and executing
+  changes on models that meant the same, but for diferent users.
+  Order of execution and sintax, also played part of the dificulty for me,
+  as I missed variables in the process or arguments like message were not
+  being passed in some cases, like "history". Overall the biggest struggle
+  of all, was visualizing how data should flow and how the output should
+  look.

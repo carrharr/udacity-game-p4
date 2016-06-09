@@ -50,6 +50,7 @@ class Game(ndb.Model):
     game_over = ndb.BooleanProperty(required=True, default=False)
     winner = ndb.KeyProperty()
     history = ndb.PickleProperty(required=True)
+    message = ndb.StringProperty()
 
     @classmethod
     def new_game(cls, user_a, user_b, word_a, word_b):
@@ -87,6 +88,7 @@ class Game(ndb.Model):
                         )
         if self.winner :
             form.winner = self.winner.get().name
+            form.message = self.message
         return form
 
     def end_game(self, winner):
@@ -130,6 +132,7 @@ class GameForm(messages.Message):
     game_over = messages.BooleanField(10, required=True)
     winner = messages.StringField(11)
     history = messages.StringField(12)
+    message = messages.StringField(13)
 
 
 class GameForms(messages.Message):

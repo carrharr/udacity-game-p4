@@ -15,9 +15,6 @@ handlers:
 - url: /tasks/cache_average_attempts
   script: main.app
 
-- url: /tasks/send_move_email
-  script: main.app
-
 - url: /crons/send_reminder
   script: main.app
 

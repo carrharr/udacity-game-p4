@@ -19,3 +19,12 @@ indexes:
   - name: word_b
   - name: word_a_guess
   - name: word_b_guess
+
+- kind: Score
+  properties:
+  - name: winner
+  - name: loser
+
+- kind: User
+  properties:
+  - name: name

@@ -167,49 +167,60 @@ class HangmanAPI(remote.Service):
             if game.attempts_remaining_b == 0:
                 raise endpoints.BadRequestException('You have been hanged!')
 
-        # Verify move is valid
-        x = re.compile('[a-zA-Z]')
-        if not x.match(guess):
+        validMove = re.compile('[a-zA-Z]')
+        if not validMove.match(guess):
             raise endpoints.BadRequestException('Invalid charachter!')
 
         if len(list(guess)) > 1:
             raise endpoints.BadRequestException('You can only enter 1 character!')
 
         # Verify in history that guess has not been guessed before
-        if a == True :
-            for (u , s) in game.history:
-                if u == 'A' and s == guess:
-                        raise endpoints.BadRequestException('You already guessed that letter!')
-        else :
-            for (u , s) in game.history:
-                if u == 'B' and s == guess:
-                        raise endpoints.BadRequestException('You already guessed that letter!')
+        if a == True:
+            for (usr , gss, opt) in game.history:
+                if usr == 'A' and gss == guess:
+                    raise endpoints.BadRequestException('You already guessed that letter!')
+        else:
+            for (usr , gss, opt) in game.history:
+                if usr == 'B' and gss == guess:
+                    raise endpoints.BadRequestException('You already guessed that letter!')
 
         # Get guess and place it in word_x_guess if correct
         for num in range(0, len(word_x)):
             if guess in str(word_x[num]):
                 word_x_guess = replaceCharacterAtIndexInString(word_x_guess,num,guess)
-
+                message = "Right"
         # If incorrect down one counter on attempts_remaining
         if guess not in str(word_x):
+            print a
             if a == True :
-                game.attempts_remaining_a -= 1
+                if game.attempts_remaining_a == 1 :
+                    game.attempts_remaining_a -= 1
+                    message = "user A was hanged"
+                else:
+                    game.attempts_remaining_a -= 1
+                    message = "Wrong"
             else:
-                game.attempts_remaining_b -= 1
+                if game.attempts_remaining_b == 1 :
+                    game.attempts_remaining_b -= 1
+                    message = "user B was hanged"
+                else:
+                    game.attempts_remaining_b -= 1
+                    message = "Wrong"
 
         if game.attempts_remaining_a == 0 and game.attempts_remaining_b ==0 :
             game.key.delete()
             raise endpoints.NotFoundException('Both have been hanged, losers!')
         # Append a move to the history
-        game.history.append(('A' if a else 'B', guess))
+        game.history.append(('A' if a else 'B', guess, message))
 
         #Check winner
         winner = check_winner(word_x, word_x_guess)
 
         if winner:
-           game.end_game(user.key)
-           game.to_form()
-           return StringMessage(message='You have won!')
+            game.end_game(user.key)
+            game.message = "User {} wins".format(request.user_name)
+            game.history.append(game.message)
+            return game.to_form()
         game.put()
         taskqueue.add(url='/tasks/cache_average_attempts')
         return game.to_form()
@@ -257,6 +268,7 @@ class HangmanAPI(remote.Service):
                       http_method='GET')
     def get_average_attempts(self, request):
         """Get the cached average moves remaining"""
+        taskqueue.add(url='/tasks/cache_average_attempts')
         return StringMessage(message=memcache.get(MEMCACHE_MOVES_REMAINING) or '')
 
     @staticmethod
