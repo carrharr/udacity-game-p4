@@ -15,8 +15,6 @@
 # limitations under the License.
 #
 # Edit by carrharr 2016-- danielcarrilloharris@gmail.com --
-import logging
-
 import webapp2
 from google.appengine.api import mail, app_identity
 from google.appengine.ext import ndb
@@ -45,7 +43,6 @@ class SendReminderEmail(webapp2.RequestHandler):
                     format(user.name,
                            games.count(),
                            ', '.join(game.key.urlsafe() for game in games))
-                logging.debug(body)
                 # This will send test emails, the arguments to send_mail are:
                 # from, to, subject, body
                 mail.send_mail('noreply@{}.appspotmail.com'.
@@ -54,6 +51,19 @@ class SendReminderEmail(webapp2.RequestHandler):
                                subject,
                                body)
 
+class SendMoveEmail(webapp2.RequestHandler):
+    def post(self):
+        """Send an email to a User that it is their turn"""
+        user = get_by_urlsafe(self.request.get('user_key'), User)
+        game = get_by_urlsafe(self.request.get('game_key'), Game)
+        subject = 'It\'s your turn!'
+        body = '{}, It\'s your turn. The game key is: {}'. \
+            format(user.name, game.key.urlsafe())
+        mail.send_mail('noreply@{}.appspotmail.com'.
+                       format(app_identity.get_application_id()),
+                       user.email,
+                       subject,
+                       body)
 
 class UpdateAverageMovesRemaining(webapp2.RequestHandler):
     def post(self):
@@ -66,4 +76,5 @@ class UpdateAverageMovesRemaining(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([
     ('/crons/send_reminder', SendReminderEmail),
     ('/tasks/cache_average_attempts', UpdateAverageMovesRemaining),
+    ('/tasks/send_move', SendMoveEmail),
 ], debug=True)

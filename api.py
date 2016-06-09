@@ -150,6 +150,11 @@ class HangmanAPI(remote.Service):
 
         # Get user name
         user = User.query(User.name == request.user_name).get()
+        # Check turn
+        print user
+        print game.turn
+        if user.key != game.turn :
+            raise endpoints.BadRequestException('Not your turn!')
         # Check user is valid
         if user == None :
             raise endpoints.NotFoundException('User not found!')
@@ -158,7 +163,7 @@ class HangmanAPI(remote.Service):
         word_x = game.word_a if a == True else game.word_b
         word_x_guess = game.word_a_guess if a == True else game.word_b_guess
         guess = request.guess
-
+        game.turn = game.user_b if a == True else game.user_a
         # Verify user has moves left
         if a == True :
             if game.attempts_remaining_a == 0:
@@ -223,6 +228,9 @@ class HangmanAPI(remote.Service):
             return game.to_form()
         game.put()
         taskqueue.add(url='/tasks/cache_average_attempts')
+        taskqueue.add(url='/tasks/send_move',
+                      params={'user_key': game.turn.urlsafe(),
+                              'game_key': game.key.urlsafe()})
         return game.to_form()
 
 

@@ -51,6 +51,7 @@ class Game(ndb.Model):
     winner = ndb.KeyProperty()
     history = ndb.PickleProperty(required=True)
     message = ndb.StringProperty()
+    turn   = ndb.KeyProperty(kind='User') # Key for users turn
 
     @classmethod
     def new_game(cls, user_a, user_b, word_a, word_b):
@@ -63,7 +64,8 @@ class Game(ndb.Model):
                     word_b_guess=[],
                     attempts_remaining_a=int(7),
                     attempts_remaining_b=int(7),
-                    history=[])
+                    history=[],
+                    turn=user_a)
         game.word_a = list(word_a)
         game.word_b = list(word_b)
         game.word_a_guess = ['_']*len(game.word_a)
