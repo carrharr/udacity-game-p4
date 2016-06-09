@@ -43,12 +43,13 @@ Uses the Google App Engine platform and the NDB libraries. The game logic goes
 as follows (once you have diferent users and a game is created):
 - user_x will try to guess word_x .
 - guesses will be done only letter by letter.
-- turns will not apply.
+- turns will start from user_a and informed over mail.
 - if a user runs out of attempts he will be hanged and will await to see if .
   his/her opponent has better luck.
 - if both users fail to guess their words the game will be deleted.
 When games get to full completion scores are recorded and a leaderboard based
-on wins can be generated.
+on wins can be generated. This score is calculated putting won games against
+all games played.
 
 ## Models
 
@@ -86,6 +87,7 @@ Game model for game objects:
 * winner          - KeyProperty
 * history         - PickleProperty
 * message         - StringProperty
+* turn            - KeyProperty
 
 It has three classmethods:
 * new_game

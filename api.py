@@ -153,7 +153,8 @@ class HangmanAPI(remote.Service):
         # Check turn
         print user
         print game.turn
-        if user.key != game.turn :
+        if user.key != game.turn and game.attempts_remaining_a != 0 and \
+        game.attempts_remaining_b != 0:
             raise endpoints.BadRequestException('Not your turn!')
         # Check user is valid
         if user == None :
